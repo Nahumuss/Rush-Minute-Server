@@ -1,6 +1,4 @@
-boards = []
 with open('levels.txt', 'r') as levels:
-    for line in levels.readlines():
-        boards.append(line[4:40])
+    boards = [line[3:40] for line in levels.readlines()]
 
-games = []
+print(boards[5])
