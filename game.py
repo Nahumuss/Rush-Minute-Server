@@ -33,7 +33,8 @@ class Game:
     def end(self, players):
         for player in players:
             player.send('end')
-        del self
+            player.close()
+        running_games.remove(self)
 
     def send_pending_messages(self, players):
         for message in self.__pending_messages:

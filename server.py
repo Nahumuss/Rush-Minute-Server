@@ -1,5 +1,5 @@
 from player import Player
-from game import Game
+from game import Game, running_games
 from socket import socket
 from select import select
 from random import randint
@@ -20,7 +20,5 @@ while True:
         game_lobby.append(Player.copy(new_socket))
         if len(game_lobby >= 2):
             game = Game(boards[randint(0,1000)], game_lobby)
-            running_games.append(game)
             game.start()
             game_lobby = []
-    running_games = [game for game in running_games if game]
