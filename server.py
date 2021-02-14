@@ -18,7 +18,7 @@ while True:
     for current_socket in rlist:
         (new_socket, address) = server_socket.accept()
         game_lobby.append(Player.copy(new_socket))
-        if len(game_lobby >= 2):
+        if len(game_lobby) >= 2:
             game = Game(boards[randint(0,1000)], game_lobby)
             game.start()
             game_lobby = []

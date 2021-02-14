@@ -8,10 +8,11 @@ class Player(socket):
         self.__id = id
 
     def send(self, message):
-        self.send(message.encode())
+        if message:
+            super().send(message.encode())
 
     def get_message(self):
-        self.recv(1024).decode()
+        return self.recv(1024).decode()
 
     @classmethod
     def copy(cls, sock, address = '127.0.0.1', id = -1):
