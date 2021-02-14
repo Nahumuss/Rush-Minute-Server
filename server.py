@@ -11,7 +11,6 @@ server_socket = socket()
 server_socket.bind(('0.0.0.0', 80))
 server_socket.listen(5)
 
-running_games = []
 game_lobby = []
 
 while True:
@@ -20,6 +19,8 @@ while True:
         (new_socket, address) = server_socket.accept()
         game_lobby.append(Player.copy(new_socket))
         if len(game_lobby >= 2):
-            running_games.append(Game(boards[randint(0,1000)], game_lobby))
+            game = Game(boards[randint(0,1000)], game_lobby)
+            running_games.append(game)
+            game.start()
             game_lobby = []
-
+    running_games = [game for game in running_games if game]

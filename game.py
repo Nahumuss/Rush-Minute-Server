@@ -1,11 +1,15 @@
 from threading import Thread
 from select import select
 
+running_games = []
+
 class Game:
+
     def __init__(self, board, players = []):
         self.__pending_messages = []
         self.__players = players
         self.__board = board
+        running_games.append(self)
 
     def game(self):
         while True:
@@ -26,11 +30,12 @@ class Game:
             return True
         return False
 
+    def end(self, players):
+        for player in players:
+            player.send('end')
+        del self
+
     def send_pending_messages(self, players):
         for message in self.__pending_messages:
             for player in players:
                 player.send(message)
-
-
-
-
