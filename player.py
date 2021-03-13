@@ -1,7 +1,7 @@
-from socket import socket
+import socket
 import _socket
 
-class Player(socket):
+class Player(socket.socket):
     def __init__(self, address = '127.0.0.1', id = -1, *args, **kwargs):
         super(Player, self).__init__(*args, **kwargs)
         self.__address = address
@@ -12,7 +12,10 @@ class Player(socket):
             super().send(message.encode())
 
     def get_message(self):
-        return self.recv(1024).decode()
+        try:
+            return self.recv(1024).decode()
+        except socket.error:
+            self.close()
 
     @classmethod
     def copy(cls, sock, address = '127.0.0.1', id = -1):
