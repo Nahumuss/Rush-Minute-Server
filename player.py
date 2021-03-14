@@ -9,12 +9,21 @@ class Player(socket.socket):
 
     def send(self, message):
         if message:
-            super().send(message.encode())
+            try:
+                super().send(message.encode())
+            except:
+                print("Could not send data")
 
     def get_message(self):
         try:
-            return self.recv(1024).decode()
+            message = self.recv(1024)
+            if message:
+                message = message.replace(b'\x00', b'').decode(encoding='utf-8')
+                return message
+            else:
+                raise socket.error
         except socket.error:
+            print("Could not recive data")
             self.close()
 
     @classmethod
