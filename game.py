@@ -8,33 +8,31 @@ class Game:
 
     def __init__(self, board, players = []):
         self.__board = board
-        self.__pending_messages = [self.__board]
+        self.__pending_messages = [[self.__board, None]]
         self.__players = players
         running_games.append(self)
-        print('Created a game!')
+        print('Created a game! ' + str(self) + ' with players: ' + str(players))
 
     def game(self):
-        while True:
-            if self.__players:
-                for player in self.__players:
-                    if player.fileno() == -1:
-                        self.__players.remove(player)
+        while self.__players:
+            for player in self.__players:
+                if player.fileno() == -1:
+                    self.__players.remove(player)
             if self.__players:
                 rlist, wlist, xlist = select(self.__players, self.__players, self.__players)
                 if len(self.__players) == 1:
-                    self.__pending_messages.append(win_message)
+                    self.__pending_messages.append([win_message, None])
                     self.send_pending_messages(wlist)
                     self.__players = None
-                messages = [player.get_message() for player in rlist]
-                for message in messages:
+                for player in rlist:
+                    message = player.get_message()
                     if message != None:
-                        if message == 'notdone': # TODO
-                            self.end(wlist)
-                        self.__pending_messages.append(message)
+                            message = message.replace('$', '')
+                            if len(message) == 36:
+                                self.__pending_messages.append([message, player])
                 self.send_pending_messages(wlist)
-            else:
-                break
-        print("Game " + str(self) + " done")
+        else:
+            print("Game " + str(self) + " done, players disconnected")
         self.end([])
 
     def start(self):
@@ -58,7 +56,9 @@ class Game:
 
     def send_pending_messages(self, players):
         for message in self.__pending_messages:
-            print("Sending: " + str(message))
+            message_data = message[0]
+            sender = message[1]
             for player in players:
-                player.send(message)
+                if player != sender:
+                    player.send(message_data)
             self.__pending_messages.remove(message)
