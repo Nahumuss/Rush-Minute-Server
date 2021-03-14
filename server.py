@@ -20,7 +20,11 @@ while True:
         (new_socket, address) = server_socket.accept()
         game_lobby.append(Player.copy(new_socket))
         print("Added connection: " + str(address))
+        for player in game_lobby:
+            if player.fileno() == -1:
+                print("Player disconnected from lobby: " + str(player))
+                game_lobby.remove(player)
         if len(game_lobby) >= player_amount:
-            game = Game(boards[randint(0,1000)], game_lobby)
+            game = Game(boards[randint(0,999)], game_lobby)
             game.start()
             game_lobby = []
