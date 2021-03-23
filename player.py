@@ -17,11 +17,10 @@ class Player(socket.socket):
     def get_message(self):
         try:
             message = self.recv(1024)
-            if message:
-                message = message.replace(b'\x00', b'').decode(encoding='utf-8')
-                return message
-            else:
+            if not message:
                 raise socket.error
+            message = message.replace(b'\x00', b'').decode(encoding='utf-8')
+            return message
         except socket.error:
             print("Could not recive data")
             self.close()
