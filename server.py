@@ -15,15 +15,16 @@ server_socket.listen(5)
 game_lobby = []
 
 while True:
-    rlist, wlist, xlist = select([server_socket], [], [])
+    rlist, wlist, xlist = select([server_socket] + game_lobby, [], [])
     for current_socket in rlist:
-        (new_socket, address) = server_socket.accept()
-        game_lobby.append(Player.copy(new_socket))
-        print("Added connection: " + str(address))
-        for player in game_lobby:
-            if player.fileno() == -1:
-                print("Player disconnected from lobby: " + str(player))
-                game_lobby.remove(player)
+        if current_socket == server_socket:
+            (new_socket, address) = server_socket.accept()
+            game_lobby.append(Player.copy(new_socket))
+            print("Added connection: " + str(address))
+        else:
+            current_socket.close()
+            game_lobby.remove(current_socket)
+            print(f"Removed connection: {str(address)} Quit Lobby")
         if len(game_lobby) >= player_amount:
             game = Game(boards[randint(0,999)], game_lobby)
             game.start()
