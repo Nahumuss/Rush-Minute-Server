@@ -6,6 +6,7 @@ class Player(socket.socket):
         super(Player, self).__init__(*args, **kwargs)
         self.__address = address
         self.__id = id
+        self.board = ''
 
     def send(self, message):
         if message:
@@ -16,7 +17,7 @@ class Player(socket.socket):
 
     def get_message(self):
         try:
-            message = self.recv(1024)
+            message = self.recv(36)
             if not message:
                 raise socket.error
             message = message.replace(b'\x00', b'').decode(encoding='utf-8')
