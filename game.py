@@ -1,15 +1,18 @@
 from threading import Thread
 from select import select
 from constants import win_message, player_amount
+from difflib import ndiff
 
 running_games = []
 
 class Game:
 
     def __init__(self, board, players = []):
-        self.__board = board
+        self.__board = 'ooooooooooooAAoooooooooooooooooooooo'
         self.__pending_messages = [[self.__board, None]]
         self.__players = players
+        for player in self.__players:
+            player.board = self.__board
         running_games.append(self)
         print('Created a game! ' + str(self) + ' with players: ' + str(players))
 
@@ -29,11 +32,41 @@ class Game:
                     if message != None:
                             message = message.replace('$', '')
                             if len(message) == 36:
-                                self.__pending_messages.append([message, player])
+                                if self.verify_move(player.board, message):
+                                    player.board = message
+                                    self.__pending_messages.append([message, player])
+                                    if message[17] == 'A':
+                                        self.win(player)
                 self.send_pending_messages(wlist)
         else:
             print("Game " + str(self) + " done, players disconnected")
         self.end([])
+
+    def verify_move(self, old_board, new_board):
+        if sorted(old_board) != sorted(new_board):
+            return False
+        car_moves = {}
+        if new_board == self.__board:
+            return True
+        for i in range(len(old_board)):
+            new_tile = new_board[i]
+            old_tile = old_board[i]
+            if new_tile != old_tile:
+                if (new_tile != 'o' and old_tile != 'o') or (new_tile == 'x' or old_tile == 'x'):
+                    print('b')
+                    return False
+                if new_tile == 'o':
+                    car = new_tile
+                    car_moves.get(car,[0,0])[0] += 1
+                else:
+                    car = old_tile
+                    car_moves.get(car,[0,0])[1] += 1
+        for car in car_moves:
+            if car[0] != car[1]:
+                print('c')
+                return False
+        return True
+
 
     def start(self):
         game = Thread(target=self.game)
@@ -53,6 +86,13 @@ class Game:
             player.send('end')
             player.close()
         running_games.remove(self)
+
+    def win(self, winner):
+        print(f'Player {winner} from game {self} won!')
+        winner.send('whyareyoutryingtocheat/readmycodebro')
+        for loser in [player for player in self.__players if player != winner]:
+            loser.send('lmfaololyoulostthatonerealhardgonext')
+        self.end(self.__players)
 
     def send_pending_messages(self, players):
         for message in self.__pending_messages:
