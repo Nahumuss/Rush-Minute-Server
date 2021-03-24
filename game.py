@@ -8,7 +8,7 @@ running_games = []
 class Game:
 
     def __init__(self, board, players = []):
-        self.__board = 'ooooooooooooAAoooooooooooooooooooooo'
+        self.__board = board
         self.__pending_messages = [[self.__board, None]]
         self.__players = players
         for player in self.__players:
