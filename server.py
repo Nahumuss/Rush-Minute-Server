@@ -6,7 +6,7 @@ from random import randint
 from constants import player_amount
 
 with open('levels.txt', 'r') as levels:
-    boards = [line[3:40] for line in levels.readlines()]
+    boards = [line[3:39] for line in levels.readlines()]
 
 server_socket = socket()
 server_socket.bind(('0.0.0.0', 5635))
