@@ -53,7 +53,6 @@ class Game:
             old_tile = old_board[i]
             if new_tile != old_tile:
                 if (new_tile != 'o' and old_tile != 'o') or (new_tile == 'x' or old_tile == 'x'):
-                    print('b')
                     return False
                 if new_tile == 'o':
                     car = new_tile
@@ -63,7 +62,6 @@ class Game:
                     car_moves.get(car,[0,0])[1] += 1
         for car in car_moves:
             if car[0] != car[1]:
-                print('c')
                 return False
         return True
 
