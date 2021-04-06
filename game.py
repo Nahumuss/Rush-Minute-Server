@@ -21,6 +21,7 @@ class Game:
             for player in self.__players:
                 if player.fileno() == -1:
                     self.__players.remove(player)
+                    break
             if self.__players:
                 rlist, wlist, xlist = select(self.__players, self.__players, self.__players)
                 if len(self.__players) == 1:
@@ -40,7 +41,7 @@ class Game:
                 self.send_pending_messages(wlist)
         else:
             print("Game " + str(self) + " done, players disconnected")
-        self.end([])
+        self.end([self.__players])
 
     def verify_move(self, old_board, new_board):
         if sorted(old_board) != sorted(new_board):
@@ -80,10 +81,12 @@ class Game:
         return False
 
     def end(self, players):
-        for player in players:
-            player.send('end')
-            player.close()
-        running_games.remove(self)
+        if players:
+            for player in players:
+                if player:
+                    player.send('end')
+                    player.close()
+            running_games.remove(self)
 
     def win(self, winner):
         print(f'Player {winner} from game {self} won!')
