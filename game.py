@@ -8,9 +8,10 @@ running_games = []
 class Game:
 
     def __init__(self, board, players = []):
-        self.__board = board
+        self.__board = 'oooooooooooooooAAooooooooooooooooooo'#board
         self.__pending_messages = [[self.__board, None]]
         self.__players = players
+        self.__ended = False
         for player in self.__players:
             player.board = self.__board
         running_games.append(self)
@@ -21,13 +22,10 @@ class Game:
             for player in self.__players:
                 if player.fileno() == -1:
                     self.__players.remove(player)
-                    break
+                    if len(self.__players) == 1:
+                        self.win(self.__players[0])
             if self.__players:
                 rlist, wlist, xlist = select(self.__players, self.__players, self.__players)
-                if len(self.__players) == 1:
-                    self.__pending_messages.append([win_message, None])
-                    self.send_pending_messages(wlist)
-                    self.__players = None
                 for player in rlist:
                     message = player.get_message()
                     if message != None:
@@ -41,7 +39,8 @@ class Game:
                 self.send_pending_messages(wlist)
         else:
             print("Game " + str(self) + " done, players disconnected")
-        self.end([self.__players])
+        if not self.__ended:
+            self.end([self.__players])
 
     def verify_move(self, old_board, new_board):
         if sorted(old_board) != sorted(new_board):
@@ -49,21 +48,21 @@ class Game:
         car_moves = {}
         if new_board == self.__board:
             return True
-        for i in range(len(old_board)):
-            new_tile = new_board[i]
-            old_tile = old_board[i]
-            if new_tile != old_tile:
-                if (new_tile != 'o' and old_tile != 'o') or (new_tile == 'x' or old_tile == 'x'):
-                    return False
-                if new_tile == 'o':
-                    car = new_tile
-                    car_moves.get(car,[0,0])[0] += 1
-                else:
-                    car = old_tile
-                    car_moves.get(car,[0,0])[1] += 1
-        for car in car_moves:
-            if car[0] != car[1]:
-                return False
+        # for i in range(len(old_board)):
+            # new_tile = new_board[i]
+            # old_tile = old_board[i]
+            # if new_tile != old_tile:
+                # if (new_tile != 'o' and old_tile != 'o') or (new_tile == 'x' or old_tile == 'x'):
+                    # return False
+                # if new_tile == 'o':
+                    # car = new_tile
+                    # car_moves.get(car,[0,0])[0] += 1
+                # else:
+                    # car = old_tile
+                    # car_moves.get(car,[0,0])[1] += 1
+        # for car in car_moves:
+            # if car[0] != car[1]:
+                # return False
         return True
 
 
@@ -81,12 +80,15 @@ class Game:
         return False
 
     def end(self, players):
+        self.__ended = True
+        print('ending')
         if players:
             for player in players:
                 if player:
                     player.send('end')
                     player.close()
-            running_games.remove(self)
+                self.__players.remove(player)
+        running_games.remove(self)
 
     def win(self, winner):
         print(f'Player {winner} from game {self} won!')
