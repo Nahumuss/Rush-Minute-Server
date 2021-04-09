@@ -23,7 +23,7 @@ class Player(socket.socket):
             message = message.replace(b'\x00', b'').decode(encoding='utf-8')
             return message
         except socket.error:
-            print("Could not recive data")
+            print(str(self) + " Disconnected!")
             self.close()
 
     @classmethod
