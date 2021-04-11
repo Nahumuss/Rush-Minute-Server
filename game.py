@@ -8,7 +8,7 @@ running_games = []
 class Game:
 
     def __init__(self, board, players = []):
-        self.__board = 'oooooooooooooooAAooooooooooooooooooo'#board
+        self.__board = board
         self.__pending_messages = [[self.__board, None]]
         self.__players = players
         self.__ended = False
@@ -25,7 +25,7 @@ class Game:
                     if len(self.__players) == 1:
                         self.win(self.__players[0])
             if self.__players:
-                rlist, wlist, xlist = select(self.__players, self.__players, self.__players)
+                rlist, wlist, _ = select(self.__players, self.__players, self.__players)
                 for player in rlist:
                     message = player.get_message()
                     if message != None:
@@ -81,7 +81,6 @@ class Game:
 
     def end(self, players):
         self.__ended = True
-        print('ending')
         if players:
             for player in players:
                 if player:
