@@ -9,7 +9,10 @@ class Game:
 
     def __init__(self, board, players = []):
         self.__board = board
-        self.__pending_messages = [[self.__board, None]]
+        self.__pending_messages = []
+        for player in players:
+            self.__pending_messages.append([f'N;{player.name}', player])
+        self.__pending_messages.append([f'U;{self.__board}', None])
         self.__players = players
         self.__ended = False
         for player in self.__players:
@@ -27,15 +30,17 @@ class Game:
             if self.__players:
                 rlist, wlist, _ = select(self.__players, self.__players, self.__players)
                 for player in rlist:
-                    message = player.get_message()
-                    if message != None:
-                            message = message.replace('$', '')
-                            if len(message) == 36:
-                                if self.verify_move(player.board, message):
-                                    player.board = message
-                                    self.__pending_messages.append([message, player])
-                                    if message[17] == 'A':
-                                        self.win(player)
+                    try:
+                        prefix, content = player.get_message()
+                    except:
+                        print(f'Player {player} disconnected from game {self}')
+                        player.close()
+                    else:
+                        if prefix == 'U' and len(content) == 36 and self.verify_move(player.board, content):
+                            player.board = content
+                            self.__pending_messages.append([f'{prefix};{content}', player])
+                            if content[17] == 'A':
+                                self.win(player)
                 self.send_pending_messages(wlist)
         else:
             print("Game " + str(self) + " done, players disconnected")
@@ -45,24 +50,6 @@ class Game:
     def verify_move(self, old_board, new_board):
         if sorted(old_board) != sorted(new_board):
             return False
-        car_moves = {}
-        if new_board == self.__board:
-            return True
-        # for i in range(len(old_board)):
-            # new_tile = new_board[i]
-            # old_tile = old_board[i]
-            # if new_tile != old_tile:
-                # if (new_tile != 'o' and old_tile != 'o') or (new_tile == 'x' or old_tile == 'x'):
-                    # return False
-                # if new_tile == 'o':
-                    # car = new_tile
-                    # car_moves.get(car,[0,0])[0] += 1
-                # else:
-                    # car = old_tile
-                    # car_moves.get(car,[0,0])[1] += 1
-        # for car in car_moves:
-            # if car[0] != car[1]:
-                # return False
         return True
 
 
@@ -80,20 +67,21 @@ class Game:
         return False
 
     def end(self, players):
-        self.__ended = True
-        if players:
-            for player in players:
-                if player:
-                    player.send('end')
-                    player.close()
-                self.__players.remove(player)
-        running_games.remove(self)
+        if not self.__ended:
+            self.__ended = True
+            if players:
+                for player in players:
+                    if player:
+                        player.send('E;')
+                        player.close()
+                    self.__players.remove(player)
+            running_games.remove(self)
 
     def win(self, winner):
         print(f'Player {winner} from game {self} won!')
-        winner.send('whyareyoutryingtocheat/readmycodebro')
+        winner.send('W;')
         for loser in [player for player in self.__players if player != winner]:
-            loser.send('lmfaololyoulostthatonerealhardgonext')
+            loser.send('L;')
         self.end(self.__players)
 
     def send_pending_messages(self, players):
