@@ -2,10 +2,11 @@ import socket
 import _socket
 
 class Player(socket.socket):
-    def __init__(self, address = '127.0.0.1', id = -1, *args, **kwargs):
+    def __init__(self, address = '127.0.0.1', name = 'Guest', id = -1, *args, **kwargs):
         super(Player, self).__init__(*args, **kwargs)
         self.__address = address
         self.__id = id
+        self.name = name
         self.board = ''
 
     def send(self, message):
@@ -17,22 +18,25 @@ class Player(socket.socket):
 
     def get_message(self):
         try:
-            message = self.recv(36)
+            message = self.recv(1024)
             if not message:
-                raise socket.error
+                return None
             message = message.replace(b'\x00', b'').decode(encoding='utf-8')
-            return message
+            return message.split(';')
         except socket.error:
             print(str(self) + " Disconnected!")
             self.close()
+        except:
+            print('Error reciving message')
 
     @classmethod
-    def copy(cls, sock, address = '127.0.0.1', id = -1):
+    def copy(cls, sock, name = 'Guest', address = '127.0.0.1', id = -1):
         fd = _socket.dup(sock.fileno())
         copy = cls(sock.family, sock.type, sock.proto, fileno=fd)
         copy.settimeout(sock.gettimeout())
         copy.set_address(address)
         copy.set_id(id)
+        copy.name = name
         return copy
 
     def set_address(self, address):
@@ -40,3 +44,9 @@ class Player(socket.socket):
 
     def set_id(self, id):
         self.__id = id
+
+    def __str__(self) -> str:
+        return f'Username: {self.name}, ip: {self.__address}'
+
+    def __repr__(self) -> str:
+        return f'|Username: {self.name}, ip: {self.__address}|'
