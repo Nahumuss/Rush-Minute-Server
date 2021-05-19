@@ -23,7 +23,7 @@ def remove_from_lobby(player):
 
 if __name__ == '__main__':
     with open('levels.txt', 'r') as levels:
-        boards = [line[3:39] for line in levels.readlines()]
+        boards = [[line[3:39]] + [line[0:2]] for line in levels.readlines()]
 
         server_socket = socket()
         server_socket.bind(('0.0.0.0', 5635))
