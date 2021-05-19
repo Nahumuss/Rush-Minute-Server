@@ -12,7 +12,7 @@ class Game:
         self.__pending_messages = []
         for player in players:
             self.__pending_messages.append([f'N;{player.name}', player])
-        self.__pending_messages.append([f'U;{self.__board}', None])
+        self.__pending_messages.append([f'U;{self.__board[0]}%{self.__board[1]}', None])
         self.__players = players
         self.__ended = False
         for player in self.__players:
@@ -37,7 +37,7 @@ class Game:
                         player.close()
                     else:
                         if prefix == 'U' and len(content) == 36 and self.verify_move(player.board, content):
-                            player.board = content
+                            player.board[0] = content
                             self.__pending_messages.append([f'{prefix};{content}', player])
                             if content[17] == 'A':
                                 self.win(player)
@@ -48,7 +48,7 @@ class Game:
             self.end([self.__players])
 
     def verify_move(self, old_board, new_board):
-        if sorted(old_board) != sorted(new_board):
+        if sorted(old_board[0]) != sorted(new_board):
             return False
         return True
 
