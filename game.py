@@ -26,7 +26,7 @@ class Game:
                 if player.fileno() == -1:
                     self.__players.remove(player)
                     if len(self.__players) == 1:
-                        self.win(self.__players[0])
+                        self.win(self.__players[0], True)
             if self.__players:
                 rlist, wlist, _ = select(self.__players, self.__players, self.__players)
                 for player in rlist:
@@ -77,9 +77,9 @@ class Game:
                     self.__players.remove(player)
             running_games.remove(self)
 
-    def win(self, winner):
+    def win(self, winner, disconnected = False):
         print(f'Player {winner} from game {self} won!')
-        winner.send('W;')
+        winner.send('W;') if not disconnected else winner.send('D;')
         for loser in [player for player in self.__players if player != winner]:
             loser.send('L;')
         self.end(self.__players)
