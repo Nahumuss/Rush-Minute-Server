@@ -7,6 +7,7 @@ running_games = []
 
 class Game:
 
+    # Creates a new game
     def __init__(self, board, players = []):
         self.__board = board
         self.__pending_messages = []
@@ -20,6 +21,7 @@ class Game:
         running_games.append(self)
         print('Created a game! ' + str(self) + ' with players: ' + str(players))
 
+    # Main loop
     def game(self):
         while self.__players:
             for player in self.__players:
@@ -47,12 +49,13 @@ class Game:
         if not self.__ended:
             self.end([self.__players])
 
+    # Verify a move
     def verify_move(self, old_board, new_board):
         if sorted(old_board[0]) != sorted(new_board):
             return False
         return True
 
-
+    # Start the game
     def start(self):
         game = Thread(target=self.game)
         try:
@@ -60,6 +63,7 @@ class Game:
         except:
             pass
 
+    # Add a player to the game
     def add_player(self, player):
         if len(self.__players) < player_amount:
             self.__players.append(player)
@@ -77,6 +81,7 @@ class Game:
                     self.__players.remove(player)
             running_games.remove(self)
 
+    # Win / send win and lose messages
     def win(self, winner, disconnected = False):
         print(f'Player {winner} from game {self} won!')
         winner.send('W;') if not disconnected else winner.send('D;')
@@ -84,6 +89,7 @@ class Game:
             loser.send('L;')
         self.end(self.__players)
 
+    # Send the messages waiting to be sent
     def send_pending_messages(self, players):
         for message in self.__pending_messages:
             message_data = message[0]

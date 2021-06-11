@@ -4,11 +4,12 @@ import _socket
 class Player(socket.socket):
     def __init__(self, address = '127.0.0.1', name = 'Guest', id = -1, *args, **kwargs):
         super(Player, self).__init__(*args, **kwargs)
-        self.__address = address
-        self.__id = id
-        self.name = name
-        self.board = ''
+        self.__address = address # IP address
+        self.__id = id # For later features
+        self.name = name # Player's name
+        self.board = '' # Current board
 
+    # Send a message to the player
     def send(self, message):
         if message:
             try:
@@ -16,6 +17,7 @@ class Player(socket.socket):
             except:
                 print("Could not send data")
 
+    # Get a message from the player (recive)
     def get_message(self):
         try:
             message = self.recv(1024)
@@ -29,6 +31,7 @@ class Player(socket.socket):
         except:
             print('Error reciving message')
 
+    # Create the player object from a socket
     @classmethod
     def copy(cls, sock, name = 'Guest', address = '127.0.0.1', id = -1):
         fd = _socket.dup(sock.fileno())
@@ -39,14 +42,18 @@ class Player(socket.socket):
         copy.name = name
         return copy
 
+    # Sets the player's address
     def set_address(self, address):
         self.__address = address
 
+    # Sets the player's id
     def set_id(self, id):
         self.__id = id
 
+    # To string
     def __str__(self) -> str:
         return f'Username: {self.name}, ip: {self.__address}'
 
+    # To string when in a collection
     def __repr__(self) -> str:
         return f'|Username: {self.name}, ip: {self.__address}|'
